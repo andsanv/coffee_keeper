@@ -1,1 +1,6 @@
+# sensitive data
 bot_token.py
+key.key
+
+# python files
+__pycache__/
