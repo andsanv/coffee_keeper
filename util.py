@@ -12,10 +12,8 @@ def read_data():
             new = {}
 
             for key, val in loaded.items():
-                print(key, val)
                 new[int(key)] = val
 
             return new
-        except Exception as e:
-            print(e)
+        except:
             return {}
