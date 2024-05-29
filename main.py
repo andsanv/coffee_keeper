@@ -1,4 +1,4 @@
-import logging, counter, messages
+import logging, counter, messages, util
 
 from bot_token import token
 
@@ -6,8 +6,7 @@ from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 
-
-counter = counter.Counter()
+count = None
 
 
 logging.basicConfig(
@@ -27,72 +26,82 @@ async def start(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
 
-    await update.message.reply_text(str(counter.register_group(update.effective_chat)))
+    await update.message.reply_text(str(count.register_group(update.effective_chat.id)))
+    util.write_data(count.counter)
 
 
 async def help_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
 
-    await update.message.reply_text(counter.handle_help())
+    await update.message.reply_text(count.handle_help())
 
 
 async def subscribe_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
 
-    await update.message.reply_text(str(counter.subscribe_user(update.effective_chat, update.effective_sender.name)))
+    await update.message.reply_text(str(count.subscribe_user(update.effective_chat.id, update.effective_sender.name)))
+    util.write_data(count.counter)
 
 
 async def get_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
 
-    await update.message.reply_text(str(counter.get_count(update.effective_chat, update.effective_sender.name, context)))
+    await update.message.reply_text(str(count.get_count(update.effective_chat.id, update.effective_sender.name, context)))
 
 
 async def get_all_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
     
-    await update.message.reply_text(str(counter.get_counts(update.effective_chat)))
+    await update.message.reply_text(str(count.get_counts(update.effective_chat.id)))
 
 
 async def set_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
     
-    await update.message.reply_text(str(counter.set_count(update.effective_chat, update.effective_sender.name, context)))
+    await update.message.reply_text(str(count.set_count(update.effective_chat.id, update.effective_sender.name, context)))
+    util.write_data(count.counter)
 
 
 async def set_all_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
      
-    await update.message.reply_text(str(counter.set_counts(update.effective_chat, context)))
+    await update.message.reply_text(str(count.set_counts(update.effective_chat.id, context)))
+    util.write_data(count.counter)
 
 
 async def reset_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
      
-    await update.message.reply_text(str(counter.reset_count(update.effective_chat, update.effective_sender.name, context)))
+    await update.message.reply_text(str(count.reset_count(update.effective_chat.id, update.effective_sender.name, context)))
+    util.write_data(count.counter)
 
 
 async def reset_all_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
      
-    await update.message.reply_text(str(counter.reset_counts(update.effective_chat)))
+    await update.message.reply_text(str(count.reset_counts(update.effective_chat.id)))
+    util.write_data(count.counter)
 
 async def increment_command(update: Update, context: CallbackContext) -> None:
     if not await check_group_chat(update, context):
         return
     
-    await update.message.reply_text(str(counter.increment_count(update.effective_chat, update.effective_sender.name, context)))
+    await update.message.reply_text(str(count.increment_count(update.effective_chat.id, update.effective_sender.name, context)))
+    util.write_data(count.counter)
 
 
 def main() -> None:
+    global count
+    count = counter.Counter(util.read_data())
+
     application = Application.builder().token(token).build()
 
     application.add_handler(CommandHandler("help", help_command))

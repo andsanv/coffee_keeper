@@ -12,6 +12,7 @@ class Errors(Enum):
     # other
     BAD_FORMAT = "badly formatted request\n\nuse the\"/help\" command for more info"
     ONLY_GROUP_CHATS = "this bot can only be used in a group chat"
+    NOT_VALID_VALUE = "value can only be positive"
 
 
     def __str__(self):

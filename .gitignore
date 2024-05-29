@@ -1,6 +1,9 @@
 # sensitive data
 bot_token.py
-key.key
+data.json
 
 # python files
 __pycache__/
+
+# MacOS files
+.DS_Store
