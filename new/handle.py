@@ -51,6 +51,7 @@ def handle_message(body: dict) -> str:
 
     if mention != None:
         text = text.replace(mention["text"], "") 
+        mention["text"] = mention["text"].replace("@", "")
 
     for token in text.split(" "):   # searching for a value through message
         try:    # saves first int value found
@@ -92,5 +93,4 @@ def handle_message(body: dict) -> str:
 if __name__ == "__main__":
     event = json_string = '{"body": {"update_id": 123456789,"message": {"message_id": 1,"from": {"id": 987654321,"is_bot": false,"first_name": "John","last_name": "Doe","username": "johndoe","language_code": "en"},"chat": {"id": 987654321,"first_name": "John","last_name": "Doe","username": "johndoe","type": "private"},"date": 1627918741,"text": "/start 5 @anotheruser /subscribe 7","entities": [{"offset": 0,"length": 6,"type": "bot_command"},{"offset": 9,"length": 12,"type": "mention"},{"offset": 22,"length": 10,"type": "bot_command"}]}}}'
 
-
-    handle_message(json.loads(event)["body"])
+    print(handle_message(json.loads(event)["body"]))
