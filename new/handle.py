@@ -1,5 +1,37 @@
+import boto3
 import json
 import commands
+import const
+import logging
+
+def update_user_info(chat_id: int, user_id: int, username: str, subscription: bool = False) -> bool:
+    database = boto3.client("dynamodb")
+    
+    if not subscription:
+        response = database.query(
+            TableName=const.COUNTER_TABLE_NAME,
+            KeyConditionExpression=f"{const.COUNTER_TABLE_PARTITION_KEY_NAME} = :pk_value AND {const.COUNTER_TABLE_SORT_KEY_NAME} = :sk_value",
+            ExpressionAttributeValues={
+                ":pk_value": {'N': chat_id},
+                ":sk_value": {'N': user_id}
+            }
+        )
+
+        if response["Items"] == []:
+            logging.info("user has not subscripted to the bot. update phase closed.")
+            return
+
+    database.put_item(
+        TableName=const.COUNTER_TABLE_NAME,
+        Item={
+            const.COUNTER_TABLE_PARTITION_KEY_NAME: {'N': chat_id},
+            const.COUNTER_TABLE_SORT_KEY_NAME: {'N': user_id},
+            "username": {'S': username}
+        }
+    )
+
+    logging.info("user information correctly added." if subscription else "username correctly updated.")
+    return True
 
 def handle_message(body: dict) -> str:
     message = body["message"]["text"]

@@ -2,58 +2,74 @@ import json
 import boto3
 import urllib3
 
-from handle import handle_message
-
+import handle
+import commands
 import logging
+from bot_token import TELEGRAM_BOT_TOKEN
 
 # Configurazione del logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+root = logging.getLogger()
+if root.handlers:
+    for handler in root.handlers:
+        root.removeHandler(handler)
 
-table_name = "coffee_counts"
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] [%(asctime)s] [%(funcName)s] %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 database = boto3.client("dynamodb")
 return_message: str = ""
 return_status_code: int = 200
 
 def lambda_handler(event, context):
     # Logging dell'evento ricevuto
-    logger.info("event correctly received")
+    logging.info("event correctly received")
     
     
     # parse message
     try:
         body = json.loads(event["body"])
     except:
-        logger.error("could not load event body properly")
+        logging.error("could not load event body properly")
         return { "statusCode": 400, "body": "could not load event body properly" }
     
     try:
         message = body["message"]
         chat = message["chat"]
     except:
-        logger.error("the bot only supports chat messages")
+        logging.error("the bot only supports chat messages")
         return { "statusCode": 200, "body": "the bot only supports chat messages" }
         
     try:
         text = message["text"]
     except:
-        logger.error("the bot only supports text messages")
+        logging.error("the bot only supports text messages")
         return { "statusCode": 200, "body": "the bot only supports text messages" }
     
     try:
         chat_id = str(chat["id"])
     except:
-        logger.error("could not retrieve \'chat_id\'")
+        logging.error("could not retrieve \'chat_id\'")
         return { "statusCode": 200, "body": "could not retrieve \'chat_id\'" }
     
     try:
         user_id = str(message["from"]["id"])
     except:
-        logger.error("could not retrieve \'user_id\'")
+        logging.error("could not retrieve \'user_id\'")
         return { "statusCode": 200, "body": "could not retrieve \'user_id\'" }
     
 
-    handle_message(body)
+    handle.update_user_info(chat_id, user_id, message["from"]["username"])
+
+    print(f"user subscribed: {commands.is_user_subscribed("572807840","572807840")}")
+
+    logging.info(f"user_id = {user_id}, message text = {text}")
+
+    return
+
+    handle.handle_message(body)
 
     
     http = urllib3.PoolManager()
@@ -73,7 +89,7 @@ def lambda_handler(event, context):
     )
         
     
-    logger.info("event correctly handled")
+    logging.info("event correctly handled")
     return { "statusCode": 200, "body": "event correctly handled" }
 
     try:
