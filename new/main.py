@@ -1,135 +1,98 @@
 import json
-import boto3
 import urllib3
+import urllib3.request
+import boto3
 
 import handle
-import commands
 import logging
+import util
+
 from bot_token import TELEGRAM_BOT_TOKEN
 
+
 # Configurazione del logger
-root = logging.getLogger()
-if root.handlers:
-    for handler in root.handlers:
-        root.removeHandler(handler)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] [%(asctime)s] [%(funcName)s] %(message)s",
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
-database = boto3.client("dynamodb")
-return_message: str = ""
-return_status_code: int = 200
+
+
+def parse_event(event: dict) -> dict:
+    try:
+        body: dict = json.loads(event["body"])
+        message: dict = body["message"]
+        chat_id: str = str(message["chat"]["id"])
+        user_id: str = str(message["from"]["id"])
+    except:
+        return None, None, None
+    
+    return message, chat_id, user_id
+    
+
 
 def lambda_handler(event, context):
-    # Logging dell'evento ricevuto
+    # setup
+    root = logging.getLogger() # logger
+
+    if root.handlers:   # remove useless aws default handlers
+        for handler in root.handlers:
+            root.removeHandler(handler)
+
+    logging.basicConfig(    # setup logger formatting
+        level=logging.INFO,
+        format="[%(levelname)s] [%(asctime)s] [%(funcName)s] %(message)s",
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+    http = urllib3.PoolManager() # http
+    database = boto3.client("dynamodb")
+
+
+    # parse event
     logging.info("event correctly received")
-    
-    
-    # parse message
-    try:
-        body = json.loads(event["body"])
-    except:
-        logging.error("could not load event body properly")
-        return { "statusCode": 400, "body": "could not load event body properly" }
-    
-    try:
-        message = body["message"]
-        chat = message["chat"]
-    except:
-        logging.error("the bot only supports chat messages")
-        return { "statusCode": 200, "body": "the bot only supports chat messages" }
-        
-    try:
-        text = message["text"]
-    except:
-        logging.error("the bot only supports text messages")
-        return { "statusCode": 200, "body": "the bot only supports text messages" }
-    
-    try:
-        chat_id = str(chat["id"])
-    except:
-        logging.error("could not retrieve \'chat_id\'")
-        return { "statusCode": 200, "body": "could not retrieve \'chat_id\'" }
-    
-    try:
-        user_id = str(message["from"]["id"])
-    except:
-        logging.error("could not retrieve \'user_id\'")
-        return { "statusCode": 200, "body": "could not retrieve \'user_id\'" }
+    message, chat_id, user_id = parse_event(event)
+
+    if message == chat_id == user_id == None:
+        logging.error("could not load event properly")
+        return { "statusCode": 400, "body": "could not load event properly" }
+    else:
+        logging.info("event parsing completed successfully")
     
 
-    handle.update_user_info(chat_id, user_id, message["from"]["username"])
+    # update user information in database
+    handle.update_user_info(database, chat_id, user_id, util.get_username_or_firstname(message["from"]))
 
-    print(f"user subscribed: {commands.is_user_subscribed("572807840","572807840")}")
 
-    logging.info(f"user_id = {user_id}, message text = {text}")
+    # handle the message
+    if not util.contains_a_command(message):  # message does not containt a bot command
+        logging.info("message is not a bot command, exiting")
+        logging.info("event correctly handled")
+        return { "statusCode": 200, "body": "event correctly handled"}
 
-    return
 
-    handle.handle_message(body)
-
+    # reply to user
+    reply_text: str = handle.handle_message(database, message)
     
-    http = urllib3.PoolManager()
-        
-    message_params = {
+    if reply_text == None:
+        logging.error("nothing to handle")
+        return {
+            "statusCode": 200,
+            "body": "nothing to handle"
+        }
+
+    data = {
         "chat_id": chat_id,
-        "text": "test superato"
+        "text": reply_text,
+        "reply_to_message_id": str(message["message_id"])
     }
-    
-    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
-    
+
     response = http.request(
         "POST",
-        url,
-        body = json.dumps(message_params),
-        headers = {'Content-Type': 'application/json'}
+        f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        body=urllib3.request.urlencode(data)
     )
         
-    
     logging.info("event correctly handled")
-    return { "statusCode": 200, "body": "event correctly handled" }
-
-    try:
-        count = text
-    except:
-        return {
-            "statusCode": 400,
-            "body": json.dumps(str(e))
-        }
-    
-    try:
-        response = database.update_item(
-                TableName = table_name,
-                Key = {
-                    "group_id" : {'N' : group_id},
-                    "user_id" : {'N' : user_id}
-                },
-                UpdateExpression = "SET #c = :c",
-                ExpressionAttributeNames = {
-                    "#c": "count"
-                },
-                ExpressionAttributeValues = {
-                    ":c": {'N' : count}
-                },
-                ReturnValues = "UPDATED_NEW"
-        )
-        
-        
-        
-        if response.status == 200:
-            m = 'Messaggio inviato con successo'
-        else:
-            m = f'Errore nell\'invio del messaggio: {response.data}'
-        
-        return {
-            'statusCode': 200,
-            'body': json.dumps(f'update successful. {m}')
-        }
-    except Exception as e:
-        return {
-            'statusCode': 400,
-            'body': json.dumps(str(e))
-        }
+    return {
+        "statusCode": 200,
+        "body": "event correctly handled"
+    }
