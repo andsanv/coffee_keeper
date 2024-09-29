@@ -10,10 +10,6 @@ import util
 from bot_token import TELEGRAM_BOT_TOKEN
 
 
-# Configurazione del logger
-
-
-
 
 def parse_event(event: dict) -> dict:
     try:
