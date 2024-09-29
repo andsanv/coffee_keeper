@@ -1,6 +1,6 @@
 import logging, counter, messages, util
 
-from bot_token import token
+from new.bot_token import token
 
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackContext
