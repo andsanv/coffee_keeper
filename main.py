@@ -1,17 +1,18 @@
-import json
 import urllib3
-import urllib3.request
 import boto3
+import json
 
 import handle
 import logging
 import util
-
-from bot_token import TELEGRAM_BOT_TOKEN
+import bot_token
 
 
 
 def parse_event(event: dict) -> dict:
+    """
+    Parses principal objects and values from the main event dictionary
+    """
     try:
         body: dict = json.loads(event["body"])
         message: dict = body["message"]
@@ -24,7 +25,10 @@ def parse_event(event: dict) -> dict:
     
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, context) -> None:
+    """
+    Main function, handler triggered by the Webhook
+    """
     # setup
     root = logging.getLogger() # logger
 
@@ -39,16 +43,16 @@ def lambda_handler(event, context):
     )
 
     http = urllib3.PoolManager() # http
-    database = boto3.client("dynamodb")
+    database = boto3.client("dynamodb") # allocate database object
 
 
     # parse event
     logging.info("event correctly received")
     message, chat_id, user_id = parse_event(event)
 
-    if message == chat_id == user_id == None:
+    if message == chat_id == user_id == None:   # in case something went wrong
         logging.error("could not load event properly")
-        return { "statusCode": 400, "body": "could not load event properly" }
+        return { "statusCode": 400, "body": "could not load event properly" }   # ask newly for the event
     else:
         logging.info("event parsing completed successfully")
     
@@ -57,36 +61,37 @@ def lambda_handler(event, context):
     handle.update_user_info(database, chat_id, user_id, util.get_username_or_firstname(message["from"]))
 
 
-    # handle the message
+    # check whether the message is addressed to the bot
     if not util.contains_a_command(message):  # message does not containt a bot command
         logging.info("message is not a bot command, exiting")
         logging.info("event correctly handled")
         return { "statusCode": 200, "body": "event correctly handled"}
 
 
-    # reply to user
+    # handle command and reply to user
     reply_text: str = handle.handle_message(database, message)
     
-    if reply_text == None:
+    if reply_text == None:  # should never happen, in case the handle_message function is called but there is no command for the bot
         logging.error("nothing to handle")
         return {
             "statusCode": 200,
             "body": "nothing to handle"
         }
 
-    data = {
+    data = {    # data to reply to the user
         "chat_id": chat_id,
         "text": reply_text,
         "reply_to_message_id": str(message["message_id"])
     }
 
-    response = http.request(
+    http.request(
         "POST",
-        f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+        f"https://api.telegram.org/bot{bot_token.TELEGRAM_BOT_TOKEN}/sendMessage",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         body=urllib3.request.urlencode(data)
     )
-        
+    
+    # end
     logging.info("event correctly handled")
     return {
         "statusCode": 200,
