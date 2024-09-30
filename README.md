@@ -24,5 +24,5 @@ Coffee Keeper is a telegram bot able to monitor the count of coffee capsules use
 <br>
 
 ### How does it work?
-Basically, I decided to do everything I could to not pay a single cent for this. Telegram manages to contact my bot through webhook, which triggers an AWS Lambda that parses the message sent,
+Telegram manages to contact my bot through webhook, which triggers an AWS Lambda that parses the message sent,
 eventually communicating with some DynamoDB tables to store data between executions.
