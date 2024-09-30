@@ -3,7 +3,7 @@
 Andrea: *"These prices are way too high, f-cking coffee machines."*  
 Francesco: *"Yeah, Polimi should do something. We should just bring our own coffee from home."*  
 Angelo: *"Capsules cost way less if you buy them yourself."*  
-Franceso: *"Definitely.*  
+Franceso: *"Definitely."*  
 Andrea: *"Why don't we buy a coffee machine?"*  
 Angelo: *"Ahahah."*  
 Andrea: *"No, I mean, seriously."*  
@@ -14,7 +14,7 @@ Francesco: *"Everyone brings his own capsules? Seems messy, every coffee machine
 Angelo: *"What if one of us buys a big pack of them and we divide them?"*  
 Francesco: *"I don't want capsules in my backpack."*  
 Andrea: *"Let's just leave them grouped in their box, in the locker with the coffee machine."*  
-Francesco: *"**And how do we know how many capsules each one of us has left?***"*  
+Francesco: *"**And how do we know how many capsules each one of us has left?**"*  
 
 <br>
 
