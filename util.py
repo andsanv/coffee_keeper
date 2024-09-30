@@ -97,4 +97,4 @@ def get_user_id_by_username(database, username: str) -> str:
     if not response["Items"]:   # no user with that username was found
         return None
     
-    return str(response["Items"][0]["user_id"])  # returns the id of the user found ("[0] to select the first in case more users were found")
+    return str(response["Items"][0]["user_id"]['N'])  # returns the id of the user found ("[0] to select the first in case more users were found")

@@ -52,7 +52,7 @@ def lambda_handler(event, context) -> None:
 
     if message == chat_id == user_id == None:   # in case something went wrong
         logging.error("could not load event properly")
-        return { "statusCode": 400, "body": "could not load event properly" }   # ask newly for the event
+        return { "statusCode": 200, "body": "could not load event properly" }
     else:
         logging.info("event parsing completed successfully")
     
