@@ -10,7 +10,7 @@ Andrea: *"No, I mean, seriously."*
 Francesco: *"Aight, but how are we doing it? We can't just bring it over every day from home."*  
 Angelo: *"We can find a locker with a power outlet close to it."*  
 Andrea: *"Exactly."*  
-Francesco: *"Everyone brings their own capsules? Seems messy, every coffee machine has its own capusles supported."*  
+Francesco: *"Everyone brings their own capsules? Seems messy, every coffee machine has its own capsules supported."*  
 Angelo: *"What if one of us buys a big pack of them and we divide them?"*  
 Francesco: *"I don't want capsules in my backpack."*  
 Andrea: *"Let's just leave them grouped in their box, in the locker with the coffee machine."*  
